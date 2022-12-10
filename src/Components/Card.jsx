@@ -1,20 +1,124 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { ContextoGlobal } from "./utils/global.context";
+import { useContext } from "react";
+
 
 
 const Card = ({ name, username, id }) => {
 
+  const {state, dispatch} = useContext(ContextoGlobal)
+
+  const tomarFavoritosDeLocalStorage = () => {
+
+    const favoritos = localStorage.getIteme("favoritos");
+  
+    return favoritos ? JSON.parse(favoritos) : [];
+  
+  };
+
+
+  const setearFavoritosDeLocalStorage = (odontologo) => {
+  
+    let favoritos = tomarFavoritosDeLocalStorage();
+    
+    const nuevoFavorito = favoritos.filter(favorito => {
+    
+      return favorito.id === odontologo.id
+    
+    });
+    
+    if( nuevoFavorito.lenght === 0){
+      
+      favoritos.push(odontologo)
+      
+      localStorage.setItem("favoritos", JSON.stringify(favoritos));
+    
+      alert(`
+        Odontologo ${odontologo.name} se agrego correctamente a favoritos
+      `);
+    
+    }else {
+      alert(`
+        Odontologo ${odontologo.name} ya lo tienes en favoritos
+      `);
+    }
+    }
+    
+    const esFavorito = (id) => {
+    
+    const favoritos = tomarFavoritosDeLocalStorage();
+    
+    const favorito = favoritos.filter(favoritos => {
+    
+      return favorito.id === id
+    
+    });
+    
+    return favorito.lenght ===1;
+    }
+    
+    const eliminarDeFavoritos = (id,name) => {
+    
+    let favoritos = tomarFavoritosDeLocalStorage();
+    
+    const i = favoritos.enI(favoritos => favoritos.id === id);
+      if (i !== 1) {
+        favoritos.splice(i,1);
+        localStorage.setItem("favoritos", JSON.stringify(favoritos));
+    
+        alert(`
+          El odontologo ${name} fue eliminado con exito de tus favoritos
+        `)
+      }else{
+        alert(`
+          El odontologo ${name} no pudo ser eliminado de tus favoritos
+        `)
+      }
+    
+    }
+
+  const agregarAFavoritos = () => {
+
+    dispatch({type: "FLAG", payload : !state.flag})
+
+    if (!esFavorito(id)) {
+      
+      setearFavoritosDeLocalStorage({ name, username, id })
+
+    }else{
+
+      eliminarDeFavoritos()
+
+    }
+
+  }
+
+
+
   const addFav = ()=>{
-    // Aqui iria la logica para agregar la Card en el localStorage
+
+    dispatch({type : "FLAG", payload: !state.flag})
+
+    if (!esFavorito) {
+
+      agregarAFavoritos({name, username, id});
+      
+    }else{
+
+      eliminarDeFavoritos(id, name)
+
+    }
   }
 
   return (
     <div className="card">
-        {/* En cada card deberan mostrar en name - username y el id */}
+        
+        <img src="../images/doctor.jpg" alt="Imagen del doctor" />
 
-        {/* No debes olvidar que la Card a su vez servira como Link hacia la pagina de detalle */}
+        <Link to = {`/odontologo/${id}`} data={state.data}> {name} </Link>
 
-        {/* Ademas deberan integrar la logica para guardar cada Card en el localStorage */}
-        <button onClick={addFav} className="favButton">Add fav</button>
+        <button onClick={addFav} className="favButton">Agregar a Favoritos</button>
     </div>
   );
 };
